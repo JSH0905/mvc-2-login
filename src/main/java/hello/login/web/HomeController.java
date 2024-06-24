@@ -9,8 +9,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 @Slf4j
 @Controller
@@ -47,7 +49,7 @@ public class HomeController {
         return "loginHome";
     }
 
-    @GetMapping("/")
+//    @GetMapping("/")
     public String homeLoginV2(HttpServletRequest request, Model model){
 
         Member member = (Member)sessionManager.getSession(request);
@@ -60,4 +62,44 @@ public class HomeController {
         model.addAttribute("member", member);
         return "loginHome";
     }
+
+    /**
+     * homeLoginV3 : HttpServlet에서 제공하는 Session 사용
+     */
+
+//    @GetMapping("/")
+    public String homeLoginV3(HttpServletRequest request, Model model){
+
+        HttpSession session = request.getSession(false);
+        if(session ==null){
+            return "home";
+        }
+
+        Member loginMember = (Member) session.getAttribute(SessionConst.LOGIN_MEMBER);
+
+        //세션에 회원 데이터가 없으면 home
+        if(loginMember == null){
+            return "home";
+        }
+
+        model.addAttribute("member", loginMember);
+        return "loginHome";
+    }
+
+    /**
+     * homeLoginV3Spring : 스프링에서 제공하는 @SessionAttribute() 사용
+     */
+    @GetMapping("/")
+    public String homeLoginV3Spring(@SessionAttribute(name = SessionConst.LOGIN_MEMBER, required = false)Member loginMember, Model model){
+
+        //세션에 회원 데이터가 없으면 home
+        if(loginMember == null){
+            return "home";
+        }
+
+        model.addAttribute("member", loginMember);
+        return "loginHome";
+    }
+
+
 }
